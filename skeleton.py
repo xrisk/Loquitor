@@ -1,4 +1,5 @@
 from collections import defaultdict
+from threading import Thread
 
 import chatexchange6 as chatexchange
 from chatexchange6 import events
@@ -29,9 +30,9 @@ class Events:
     rooms = []
 
     @classmethod
-    def register(cls, signal_name, type_id):
-        cls.events[signal_name] = type_id
-        cls.events[type_id].setdefault(defaultdict(dict))
+    def register(cls, signal_name, event_cls):
+        cls.events[signal_name] = event_cls.type_id
+        chatexchange.events.register_type(event_cls)
 
     def __init__(self):
         raise Exception("Cannot instantiate class")
@@ -50,13 +51,14 @@ class Room(chatexchange.rooms.Room):
 
         self.room_id = room_id
         self.join()
-        self.watch(self.emit)
+        self.watch(lambda e,c: Thread(target=self.emit, args=(e,c)).start())
+
 
     def emit(self, event, client):
         events = self._events[event.type_id]
         for priority in sorted(events, reverse=True):
             for callback in events[priority].values():
-                if callback(event, client):
+                if callback(event, self, client):
                     return
 
 
