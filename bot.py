@@ -10,15 +10,20 @@ import skeleton
 
 class EventMeta(type, chatexchange.events.Event):
     def __new__(self, class_name, bases, attrs):
-        print(attrs)
         attrs['type_id'] = class_name
         if '__init__' not in attrs:
             attrs['__init__'] = self._default_init
+
+        event_vars = dict(vars(chatexchange.events.Event))
+        del event_vars['__init__']
+        attrs.update(event_vars)
+
         return type.__new__(self, class_name, bases, attrs)
 
     def _default_init(self, data, client):
         chatexchange.events.Event.__init__(self, data, client)
-        self.update(data)
+        for key, value in data.items():
+            setattr(self, key, value)
 
 class Command(metaclass=EventMeta):
     pass
