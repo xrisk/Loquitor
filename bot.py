@@ -8,11 +8,20 @@ import chatexchange
 
 import skeleton
 
-class Command(chatexchange.events.MessageEvent):
-    type_id = 'bot.Command'
-    def __init__(self, data, client):
-        chatexchange.events.MessageEvent.__init__(self, data, client)
-        self.__dict__.update(data)
+class EventMeta(type, chatexchange.events.Event):
+    def __new__(self, class_name, bases, attrs):
+        print(attrs)
+        attrs['type_id'] = class_name
+        if '__init__' not in attrs:
+            attrs['__init__'] = self._default_init
+        return type.__new__(self, class_name, bases, attrs)
+
+    def _default_init(self, data, client):
+        chatexchange.events.Event.__init__(self, data, client)
+        self.update(data)
+
+class Command(metaclass=EventMeta):
+    pass
 
 skeleton.Events.register('command', Command)
 
