@@ -1,6 +1,7 @@
 import csv
 import html
 from io import StringIO
+import re
 
 from bs4 import BeautifulSoup
 import requests
@@ -18,19 +19,38 @@ def on_search(event, room, client):
 
     event.respond("\n\n\n".join(messages), False)
 
-def on_wiki(event, room, client):
-    url = "https://en.wikipedia.org/w/index.php?search={}".format(quote_plus(event.query))
+WIKI_DEFINE = 'en.wiktionary.org'
+WIKI_ENCYCL = 'en.wikipedia.org'
+def wiki_find(event, room, client, site=WIKI_ENCYCL):
+    url = "https://{}/w/index.php?search={}".format(site, quote_plus(event.query))
     r = requests.get(url)
-    if r.url.startswith("https://en.wikipedia.org/wiki"):
+    if r.url.startswith("https://{}/wiki".format(site)):
         event.respond(r.url)
-    else:
-        page = BeautifulSoup(r.text)
-        first_result = page.find("div", {'class': 'mw-search-result-heading'})
-        link = first_result.find('a')
-        event.respond('https://en.wikipedia.org{}'.format(link['href']))
+        return
 
-commands = {'search': on_search, 'wiki': on_wiki}
+    page = BeautifulSoup(r.text)
+
+    did_you_mean = page.find('div', {'class': 'searchdidyoumean'})
+    if did_you_mean:
+        link = did_you_mean.find('a')['href']
+        link_regex = '&search=(?P<word>.*?)&'
+        word = re.search(link_regex, link).group('word')
+        event.query = word
+        wiki_find(event, room, client, site)
+        return
+
+    first_result = page.find("div", {'class': 'mw-search-result-heading'})
+    if first_result:
+        link = first_result.find('a')
+        event.respond('https://{}{}'.format(site, link['href']))
+        return
+
+    event.respond("Sorry, I don't know that word.")
+
+commands = {'search': on_search, 'wiki': wiki_find,
+            'define': lambda e,r,c: wiki_find(e,r,c,WIKI_DEFINE)}
 help = {
     'search': 'Search for item on the web (using Bing)',
     'wiki': 'Search for item on Wikipedia',
+    'define': 'Search for meaning of word (on Wiktionary)',
 }
