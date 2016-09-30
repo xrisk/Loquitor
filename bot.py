@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 from code import interact
+import csv
 from getpass import getpass
 import html
 from random import choice
 import shlex
 import sys
+from traceback import print_exc
 
 import chatexchange
 
@@ -13,13 +15,17 @@ import skeleton
 
 class Bot:
     UNKNOWN_MESSAGES = (
-        "I don't now what that means.", "Sorry, I don't understand.",
+        "I don't know what that means.", "Sorry, I don't understand.",
         "Huh?", "What does that mean?", "That isn't in my dictionary.",
-        "I don't get what you're trying to say.",
+        "I don't get what you're trying to say.", "I don't get it.",
+        "That doesn't make any sense",
     )
     TEST_MESSAGES = (
         "This is just a test.", "I'm working.", "Hey.",
         "Test yourself, and see how you like it.", "Don't bother me.",
+        "https://i.stack.imgur.com/N64oS.gif", "I'm too tired to respond.",
+        "Today's my day off.  Can't it wait?", "When do I get a vacation?",
+        "Maybe later, okay?", "Leave me alone.", "What do you want?",
     )
     NUEL_TESTS = (
         "https://chat.stackoverflow.com/transcript/85048?m=33126572#33126572",
@@ -47,19 +53,60 @@ class Bot:
 
         self.commands = {}
 
-        self.register("test", self.test_command)
+        self.register("test", self.test_command, help="It didn't work.")
+        self.register("help", self.help_command, help="Syntax: `help` or `help <cmd>`.  If cmd supports arguments, `help <cmd> <cmd-args>` may be possible")
         self.room.connect('message-posted', self.on_message)
 
     def test_command(self, event, room, client):
+        """Registering this command was as simple as:
+
+        bot.register("test", test_command)"""
+
         if event.data['user_id'] == 5768335:
             message = choice(self.NUEL_TESTS)
         else:
             message = choice(self.TEST_MESSAGES)
-        room.send_message(":{} {}".format(event.data['message_id'], message))
+        event.respond(message)
 
-    def register(self, command, function):
+    def get_help(self, command, args=()):
+        if command not in self.commands:
+            return None
+
+        command_help = self.commands[command].help
+        if callable(command_help):
+            return command_help(*args)
+        return command_help
+            
+
+    def help_command(self, event, room, client):
+        args = event.args
+
+        if args:
+            cmd = args[0]
+            cmd_args = args[1:]
+            help = "*{}*: {}".format(cmd, self.get_help(cmd, cmd_args))
+            if help is None:
+                help = "Sorry, I can't help you with that."
+            event.respond(help)
+
+        else:
+            helps = []
+            for command in self.commands:
+                help = self.get_help(command)
+                if help is not None:
+                    helps.append(">>{}: {}".format(command, help))
+
+            message = "\n".join(helps)
+            message += "\n\nMy commands always start with >>.  For example, >>test is a command that will respond to you with some random messages.  Try `help <cmd>` for help on the other commands."
+
+            event.respond(message, False)
+            return message
+
+
+    def register(self, command, function, help=None):
         signal_name = 'Command_{}'.format(command)
         event_cls = type(signal_name, (Command,), {})
+        event_cls.help = help
         skeleton.Events.register(signal_name, event_cls)
         self.commands[command] = event_cls
         self.room.connect(signal_name, function)
@@ -68,19 +115,31 @@ class Bot:
         message = html.unescape(event.content)
         if message.startswith(">>"):
             message = message[2:]
-            command, *args = shlex.split(message)
+            # Puts quoted text as one argument, but ignores apostrophes
+            command, _, query = message.partition(' ')
+            query = query.strip()
+            args = next(csv.reader([query], delimiter=" "))
             event.data['command'] = command
+            event.data['query'] = query
             event.data['args'] = args
+            event.data['respond'] = lambda string, len_check=False:\
+                room.send_message(
+                    ":{} {}".format(event.data['message_id'], string),
+                    len_check
+                )
 
             if command in self.commands:
                 event.data['event_type'] = 'Command_{}'.format(command)
                 new_event = self.commands[command](event.data, client)
-                room.emit(new_event, client)
+                try:
+                    room.emit(new_event, client)
+                except Exception as e:
+                    new_event.respond("Oops. That's an error: {}".format(e))
+                    print_exc()
 
             else:
                 message = choice(self.UNKNOWN_MESSAGES)
-                m_id = event.data['message_id']
-                room.send_message(":{} {}".format(m_id, message))
+                event.data['respond'](message)
 
         
 
@@ -108,9 +167,26 @@ skeleton.Events.register('command', Command)
 
 
 def main(room, username, password, host='stackoverflow.com'):
+    import scripts
+
     client = chatexchange.Client(host, username, password)
     room = skeleton.Room(room, client)
     bot = Bot(room, client)
+
+    for module_name in scripts.__all__:
+        module = sys.modules['scripts.{}'.format(module_name)]
+        if hasattr(module, 'main') and callable(module.main):
+            module.main(room, bot, client)
+        elif hasattr(module, 'commands') and hasattr(module.commands, 'items'):
+            for com_name, func in module.commands.items():
+                bot.register(com_name, func)
+
+            if hasattr(module, 'help') and hasattr(module.help, 'items'):
+                for command, help in module.help.items():
+                    bot.commands[command].help = help
+        else:
+            print("Invalid script file: {!r}".format(module_name))
+
 
     interact(banner="Welcome to Loquitor!", local=locals())
 
