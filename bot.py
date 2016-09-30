@@ -188,6 +188,8 @@ def main(room, username, password, host='stackoverflow.com'):
             print("Invalid script file: {!r}".format(module_name))
 
 
+    interact_vars = locals()
+    interact_vars.update(globals())
     interact(banner="Welcome to Loquitor!", local=locals())
 
 
@@ -203,4 +205,4 @@ if __name__ == '__main__':
             room = input("Please type an integer: ")
 
     print("Loading...", end='\r')
-    main(1, username, password)
+    main(room, username, password)
