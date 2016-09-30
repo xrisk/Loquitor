@@ -31,8 +31,10 @@ class Events:
 
     @classmethod
     def register(cls, signal_name, event_cls):
-        cls.events[signal_name] = event_cls.type_id
+        cls.events[signal_name.replace("-", "_")] = event_cls.type_id
         chatexchange.events.register_type(event_cls)
+        for room in cls.rooms:
+            room._events[event_cls.type_id] = defaultdict(dict)
 
     def __init__(self):
         raise Exception("Cannot instantiate class")
