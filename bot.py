@@ -91,7 +91,7 @@ class Bot:
 
         else:
             helps = []
-            for command in self.commands:
+            for command in sorted(self.commands):
                 help = self.get_help(command)
                 if help is not None:
                     helps.append(">>{}: {}".format(command, help))
