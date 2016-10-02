@@ -28,21 +28,26 @@ class Bot:
         "Maybe later, okay?", "Leave me alone.", "What do you want?",
     )
     NUEL_TESTS = (
-        "https://chat.stackoverflow.com/transcript/85048?m=33126572#33126572",
-        "https://chat.stackoverflow.com/transcript/85048?m=33101025#33101025",
-        "https://chat.stackoverflow.com/transcript/85048?m=32915719#32915719",
-        "https://chat.stackoverflow.com/transcript/85048?m=32807076#32807076",
-        "https://chat.stackoverflow.com/transcript/85048?m=32774161#32774161",
-        "https://chat.stackoverflow.com/transcript/85048?m=33149227#33149227",
-        "https://chat.stackoverflow.com/transcript/85048?m=32926859#32926859",
-        "https://chat.stackoverflow.com/transcript/85048?m=33083381#33083381",
-        "https://chat.stackoverflow.com/transcript/85048?m=33083372#33083372",
-        "https://chat.stackoverflow.com/transcript/85048?m=33083371#33083371",
-        "https://chat.stackoverflow.com/transcript/85048?m=33083332#33083332",
-        "https://chat.stackoverflow.com/transcript/85048?m=33079296#33079296",
-        "https://chat.stackoverflow.com/transcript/85048?m=33068126#33068126",
-        "https://chat.stackoverflow.com/transcript/85048?m=32828808#32828808",
-        "https://chat.stackoverflow.com/transcript/85048?m=32774149#32774149",
+        "https://chat.stackoverflow.com/transcript/message/33126572",
+        "https://chat.stackoverflow.com/transcript/message/33101025",
+        "https://chat.stackoverflow.com/transcript/message/32915719",
+        "https://chat.stackoverflow.com/transcript/message/32807076",
+        "https://chat.stackoverflow.com/transcript/message/32774161",
+        "https://chat.stackoverflow.com/transcript/message/33149227",
+        "https://chat.stackoverflow.com/transcript/message/32926859",
+        "https://chat.stackoverflow.com/transcript/message/33083381",
+        "https://chat.stackoverflow.com/transcript/message/33083372",
+        "https://chat.stackoverflow.com/transcript/message/33083371",
+        "https://chat.stackoverflow.com/transcript/message/33083332",
+        "https://chat.stackoverflow.com/transcript/message/33079296",
+        "https://chat.stackoverflow.com/transcript/message/33068126",
+        "https://chat.stackoverflow.com/transcript/message/32828808",
+        "https://chat.stackoverflow.com/transcript/message/32774149",
+        "https://chat.stackoverflow.com/transcript/message/33205426",
+        "https://chat.stackoverflow.com/transcript/message/33205433",
+        "https://chat.stackoverflow.com/transcript/message/33205448",
+        "https://chat.stackoverflow.com/transcript/message/33205451",
+
     )
     def __init__(self, room, client):
         if not client.logged_in:
@@ -52,10 +57,12 @@ class Bot:
         self.client = client
 
         self.commands = {}
+        self.responses = {}
 
         self.register("test", self.test_command, help="It didn't work.")
         self.register("help", self.help_command, help="Syntax: `help` or `help <cmd>`.  If cmd supports arguments, `help <cmd> <cmd-args>` may be possible")
         self.room.connect('message-posted', self.on_message)
+        self.room.connect('message-reply', self.on_reply)
 
     def test_command(self, event, room, client):
         """Registering this command was as simple as:
@@ -63,10 +70,10 @@ class Bot:
         bot.register("test", test_command)"""
 
         if event.data['user_id'] == 5768335:
-            message = choice(self.NUEL_TESTS)
+            response = choice(self.NUEL_TESTS)
         else:
-            message = choice(self.TEST_MESSAGES)
-        event.respond(message)
+            response = choice(self.TEST_MESSAGES)
+        event.message.reply(response)
 
     def get_help(self, command, args=()):
         if command not in self.commands:
@@ -87,7 +94,7 @@ class Bot:
             help = "*{}*: {}".format(cmd, self.get_help(cmd, cmd_args))
             if help is None:
                 help = "Sorry, I can't help you with that."
-            event.respond(help)
+            event.message.reply(help)
 
         else:
             helps = []
@@ -99,7 +106,7 @@ class Bot:
             message = "\n".join(helps)
             message += "\n\nMy commands always start with >>.  For example, >>test is a command that will respond to you with some random messages.  Try `help <cmd>` for help on the other commands."
 
-            event.respond(message, False)
+            event.message.reply(message, False)
             return message
 
 
@@ -110,6 +117,18 @@ class Bot:
         skeleton.Events.register(signal_name, event_cls)
         self.commands[command] = event_cls
         self.room.connect(signal_name, function)
+
+    def register_response(self, message_id, function):
+        self.responses[message_id] = function
+
+    def register_responses(self, *args):
+        for message_id, function in args:
+            self.register_response(message_id, function)
+
+    def on_reply(self, event, room, client):
+        response_id = event.message.parent._parent_message_id
+        if response_id in self.responses:
+            self.responses[response_id](event, room, client)
 
     def on_message(self, event, room, client):
         message = html.unescape(event.content)
@@ -122,24 +141,19 @@ class Bot:
             event.data['command'] = command
             event.data['query'] = query
             event.data['args'] = args
-            event.data['respond'] = lambda string, len_check=False:\
-                room.send_message(
-                    ":{} {}".format(event.data['message_id'], string),
-                    len_check
-                )
-
+            event.data.update(vars(event))
             if command in self.commands:
                 event.data['event_type'] = 'Command_{}'.format(command)
                 new_event = self.commands[command](event.data, client)
                 try:
                     room.emit(new_event, client)
                 except Exception as e:
-                    new_event.respond("Oops. That's an error: {}".format(e))
+                    new_event.message.reply("Oops. That's an error: {}".format(e))
                     print_exc()
 
             else:
                 message = choice(self.UNKNOWN_MESSAGES)
-                event.data['respond'](message)
+                event.message.reply(message)
 
         
 
