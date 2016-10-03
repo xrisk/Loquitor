@@ -53,7 +53,7 @@ class Room(chatexchange.rooms.Room):
 
         self.room_id = room_id
         self.join()
-        self.watch(lambda e,c: Thread(target=self.emit, args=(e,c)).start())
+        self.watch_polling(lambda e,c: Thread(target=self.emit, args=(e,c)).start(), 1)
 
 
     def emit(self, event, client):

@@ -8,6 +8,7 @@ from random import choice
 import shlex
 import sys
 from traceback import print_exc
+import unicodedata
 
 import chatexchange
 
@@ -18,7 +19,7 @@ class Bot:
         "I don't know what that means.", "Sorry, I don't understand.",
         "Huh?", "What does that mean?", "That isn't in my dictionary.",
         "I don't get what you're trying to say.", "I don't get it.",
-        "That doesn't make any sense",
+        "That doesn't make any sense", "what you mean?",
     )
     TEST_MESSAGES = (
         "This is just a test.", "I'm working.", "Hey.",
@@ -133,9 +134,9 @@ class Bot:
     def on_message(self, event, room, client):
         message = html.unescape(event.content)
         if message.startswith(">>"):
-            message = message[2:]
+            message = message[2:].strip()
             # Puts quoted text as one argument, but ignores apostrophes
-            command, _, query = message.partition(' ')
+            command, _, query = remove_ctrl_chars(message).partition(' ')
             query = query.strip()
             args = next(csv.reader([query], delimiter=" "))
             event.data['command'] = command
@@ -206,6 +207,9 @@ def main(room, username, password, host='stackoverflow.com'):
     interact_vars.update(globals())
     interact(banner="Welcome to Loquitor!", local=locals())
 
+
+def remove_ctrl_chars(s):
+    return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 if __name__ == '__main__':
     username = input("E-mail: ")
