@@ -5,18 +5,18 @@ A chatbot for Stack Exchange
 
 A command is given to the bot by prepending a chat message with `>>`.  Those commands are as follows:
 
-* define QUERY: Searches wiktionary.org for the meaning of a word or phrase.
-* help [CMD]: Gives help on all commands that implement help (probably everything).  If the name of a command is passed to `help` (without `>>`), it gives help on only that command.
-* search QUERY: Gives a list of ten search results from bing.com.  Because of the limitations of chat formatting, the results are given like this:
+* `define QUERY`: Searches wiktionary.org for the meaning of a word or phrase.
+* `help [CMD]`: Gives help on all commands that implement help (probably everything).  If the name of a command is passed to `help` (without `>>`), it gives help on only that command.
+* `search QUERY`: Gives a list of ten search results from bing.com.  Because of the limitations of chat formatting, the results are given like this:
 
 >   \> Speedtest.net - Official Site, (https://speedtest.net)
 >
    Test your Internet connection bandwidth to locations around the world with this interactive broadband speed test from Ookla 
 
-* test: Responds with a random message taken from a list found [here](https://github.com/ralphembree/Loquitor/blob/master/bot.py#L24).
-* whatis: Tries to find a definition of a word or phrase by searching Google for the phrase with `definition` prepended.  If Google's little custom response is not there, it resorts to the `define` command.
-* wiki: Searches wikipedia.org for a word or phrase.
-* youtube QUERY: Searches youtube.com for a video.  It responds with the first result one-boxed. The `yt` shortcut command can also be used.
+* `test`: Responds with a random message taken from a list found [here](https://github.com/ralphembree/Loquitor/blob/master/bot.py#L24).
+* `whatis`: Tries to find a definition of a word or phrase by searching Google for the phrase with `definition` prepended.  If Google's little custom response is not there, it resorts to the `define` command.
+* `wiki`: Searches wikipedia.org for a word or phrase.
+* `youtube QUERY`: Searches youtube.com for a video.  It responds with the first result one-boxed. The `yt` shortcut command can also be used.
 
 ## Contributing
 
@@ -69,14 +69,14 @@ More information about callbacks is given [below](#callbacks).  If a `help` dict
         'yes-or-no': 'Give a random response of yes or no.  yes? and no? are synonymous commands.',
     }
 
-A function could also be used instead of a string.  Commands that do not appear in that `help` dictionary will not appear in the general help, and will reply with `Sorry, I can't help you with that.` if help is asked for that command.  Better help texts are planned [below](#Todo).
+A function could also be used instead of a string.  Commands that do not appear in that `help` dictionary will not appear in the general help, and will reply with `Sorry, I can't help you with that.` if help is asked for that command.  Better help texts are planned [below](#todo).
 
 
 ### Callbacks
 
 A callback is a function that is called when a signal is emitted.  A callback is given three arguments: `event`, `room`, and `client`.  The event is a subclass of `chatexchange.events.Event`. (Command events are subclasses of `bot.Command`).  The `bot.Command` events are just like `chatexchange.events.MessagePosted` events except that they have these three extra attributes (and keys of `event.data`): `command`, `query`, and `args`.  Here is an example:
 
-\>\>search Clark Gable "Gone with the Wind"
+    >>search Clark Gable "Gone with the Wind"
 
 The event would be of type `Command_search`; `event.command` would be `search`; `event.query` would be `'Clark Gable "Gone with the Wind"'`; and `event.args` would be `['Clark', 'Gable', 'Gone with the Wind']`.  The most commonly-used attribute of an event is `event.message` because it provides `event.message.reply()`.
 
