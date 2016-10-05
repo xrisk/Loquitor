@@ -59,12 +59,12 @@ class Room(chatexchange.rooms.Room):
     def emit(self, event, client):
         events = self._events[event.type_id]
         for priority in sorted(events, reverse=True):
-            for callback in events[priority].values():
-                if callback(event, self, client):
+            for callback, args in events[priority].values():
+                if callback(event, self, client, *args):
                     return
 
 
-    def connect(self, event, callback, priority=0):
+    def connect(self, event, callback, *args, priority=0):
         id = self._connection_id
         event = event.replace('-', '_')
         try:
@@ -72,7 +72,7 @@ class Room(chatexchange.rooms.Room):
         except KeyError:
             raise ValueError("Unknown event: {!r}".format(event))
 
-        self._events[Events.events[event]][priority][id] = callback
+        self._events[Events.events[event]][priority][id] = (callback, args)
         self._ids[id] = (event, priority)
         self._connection_id += 1
         return id

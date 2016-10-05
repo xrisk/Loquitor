@@ -41,7 +41,7 @@ def eval_(node):
     else:
         raise TypeError(node)
 
-def on_search(event, room, client):
+def on_search(event, room, client, bot):
     search = Bing.search(event.query)
     messages = []
 
@@ -52,7 +52,7 @@ def on_search(event, room, client):
 
     event.message.reply("\n\n\n".join(messages), False)
 
-def wiki_find(event, room, client, site=WIKI_ENCYCL):
+def wiki_find(event, room, client, bot, site=WIKI_ENCYCL):
     url = "https://{}/w/index.php?search={}".format(site, quote_plus(event.query))
     r = requests.get(url)
     if r.url.startswith("https://{}/wiki".format(site)):
@@ -78,7 +78,7 @@ def wiki_find(event, room, client, site=WIKI_ENCYCL):
 
     event.message.reply("Sorry, I don't know that word.")
 
-def on_whatis(event, room, client):
+def on_whatis(event, room, client, bot):
     query = event.query
     try:
         event.message.reply(eval_expr(query))
@@ -114,7 +114,7 @@ def on_whatis(event, room, client):
     else:
         event.message.reply(definition_tag.text)
 
-def on_youtube(event, room, client):
+def on_youtube(event, room, client, bot):
     query = event.query
     url = "https://youtube.com/results?search_query=" + quote_plus(query)
     html = urlopen(url)
@@ -131,7 +131,7 @@ def on_youtube(event, room, client):
         event.message.reply("https://youtube.com" + link)
 
 commands = {'search': on_search, 'wiki': wiki_find, 'youtube': on_youtube,
-            'define': lambda e,r,c: wiki_find(e,r,c,WIKI_DEFINE),
+            'define': lambda e,r,c,b: wiki_find(e,r,c,b,WIKI_DEFINE),
             'yt': on_youtube, 'whatis': on_whatis,
 }
 

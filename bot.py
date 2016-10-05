@@ -65,7 +65,7 @@ class Bot:
         self.room.connect('message-posted', self.on_message)
         self.room.connect('message-reply', self.on_reply)
 
-    def test_command(self, event, room, client):
+    def test_command(self, event, room, client, bot):
         """Registering this command was as simple as:
 
         bot.register("test", test_command)"""
@@ -86,21 +86,21 @@ class Bot:
         return command_help
             
 
-    def help_command(self, event, room, client):
+    def help_command(self, event, room, client, bot):
         args = event.args
 
         if args:
             cmd = args[0]
             cmd_args = args[1:]
-            help = "*{}*: {}".format(cmd, self.get_help(cmd, cmd_args))
+            help = "*{}*: {}".format(cmd, bot.get_help(cmd, cmd_args))
             if help is None:
                 help = "Sorry, I can't help you with that."
             event.message.reply(help)
 
         else:
             helps = []
-            for command in sorted(self.commands):
-                help = self.get_help(command)
+            for command in sorted(bot.commands):
+                help = bot.get_help(command)
                 if help is not None:
                     helps.append(">>{}: {}".format(command, help))
 
@@ -117,7 +117,7 @@ class Bot:
         event_cls.help = help
         skeleton.Events.register(signal_name, event_cls)
         self.commands[command] = event_cls
-        self.room.connect(signal_name, function)
+        self.room.connect(signal_name, function, self)
 
     def register_response(self, message_id, function):
         self.responses[message_id] = function
@@ -129,16 +129,21 @@ class Bot:
     def on_reply(self, event, room, client):
         response_id = event.message.parent._parent_message_id
         if response_id in self.responses:
+            message = event.message.content.partition(' ')[-1]
+            query, args = get_query_args(message)
+            event.data['query'] = query
+            event.data['args'] = args
+            event.data.update(vars(event))
+            for key, value in event.data.items():
+                setattr(event, key, value)
             self.responses[response_id](event, room, client)
 
     def on_message(self, event, room, client):
         message = html.unescape(event.content)
         if message.startswith(">>"):
             message = message[2:].strip()
-            # Puts quoted text as one argument, but ignores apostrophes
-            command, _, query = remove_ctrl_chars(message).partition(' ')
-            query = query.strip()
-            args = next(csv.reader([query], delimiter=" "))
+            command, _, query = message.partition(' ')
+            query, args = get_query_args(query)
             event.data['command'] = command
             event.data['query'] = query
             event.data['args'] = args
@@ -210,6 +215,11 @@ def main(room, username, password, host='stackoverflow.com'):
 
 def remove_ctrl_chars(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
+
+def get_query_args(string):
+    query = remove_ctrl_chars(string).strip()
+    args = next(csv.reader([query], delimiter=" "))
+    return query, args
 
 if __name__ == '__main__':
     username = input("E-mail: ")
