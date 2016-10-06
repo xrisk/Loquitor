@@ -58,7 +58,7 @@ def human_to_seconds(string):
 class main:
     def __init__(self, room, bot, client):
         self.play_time = 0
-        bot.register("pause", self.pause)
+        bot.register("pause", self.pause, help="Given `>>pause 4 minutes`, stop listening for commands for 4 minutes.  Many time units are supported.  This is a RO-only command.")
         room.connect("message-posted", self.message_posted, priority=1)
 
     def message_posted(self, event, room, client):

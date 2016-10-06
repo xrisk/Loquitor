@@ -38,4 +38,7 @@ def on_greet(event, room, client, bot):
 
 def main(room, bot, client):
     room.connect("user-entered", user_entered)
-    bot.register("greet", on_greet)
+    bot.register(
+        "greet", on_greet,
+        help="Given a space-separated list of usernames, greet those users."
+    )

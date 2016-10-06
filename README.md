@@ -6,7 +6,9 @@ A chatbot for Stack Exchange
 A command is given to the bot by prepending a chat message with `>>`.  Those commands are as follows:
 
 * `define QUERY`: Searches wiktionary.org for the meaning of a word or phrase.
+* `greet USER1 [USER2] [USER3] ...`: For each user given, greet that user (no @ is needed when giving the names.)
 * `help [CMD]`: Gives help on all commands that implement help (probably everything).  If the name of a command is passed to `help` (without `>>`), it gives help on only that command.
+* `pause TIME`: Pause for the specified amount of time.  When the bot is paused, it may respond to messages already posted, but it will not listen for more messages until the time runs out.  Only room owners can run this command.
 * `search QUERY`: Gives a list of ten search results from bing.com.  Because of the limitations of chat formatting, the results are given like this:
 
 >   \> Speedtest.net - Official Site, (https://speedtest.net)
@@ -91,7 +93,3 @@ The client is an instance of `chatexchange.client.Client`.
 
 * Separate help texts for main and specific help commands.
 * Option to have a different command prompt.
-
-#### scripts/
-
-* Greet users that enter the room who haven't posted here before (ignoring those with under 20 reputation).
