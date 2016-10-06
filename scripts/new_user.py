@@ -9,6 +9,7 @@ GREETINGS = (
 )
 
 def greet(room, user_name):
+    user_name = "".join(user_name.split())
     greeting = choice(GREETINGS)
     room.send_message(greeting.format("@" + user_name))
 
@@ -33,7 +34,7 @@ def user_entered(event, room, client):
 
 def on_greet(event, room, client, bot):
     for user_name in event.args:
-        user_name = "".join(user_name.split()).strip(",")
+        user_name = user_name.strip(",")
         greet(room, user_name)
 
 def main(room, bot, client):
