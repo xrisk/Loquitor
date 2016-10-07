@@ -16,7 +16,7 @@ def greet(room, user_name):
 def user_entered(event, room, client):
     me = client.get_me().id
     user_id = event.data['user_id']
-    if user_id == me:
+    if user_id == me or client.get_user(user_id).reputation < 20:
         return
     room_id = room.room_id
 
