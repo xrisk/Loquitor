@@ -209,6 +209,7 @@ def main(room, username, password, host='stackoverflow.com'):
             print("Invalid script file: {!r}".format(module_name))
 
 
+    send = room.send_message
     interact_vars = locals()
     interact_vars.update(globals())
     interact(banner="Welcome to Loquitor!", local=locals())

@@ -24,7 +24,7 @@ class main:
             return
 
         self.translator = Translator(client_id, secret)
-        bot.register("translate", self.on_translate, help="Translate word/phrase using Bing's translation API.  By default, the source language is guessed, and the target language is English, but you can specify with the `from` and `to` keywords (at the end of the command.)  Multi-word texts should be in quotation marks."))
+        bot.register("translate", self.on_translate, help="Translate word/phrase using Bing's translation API.  By default, the source language is guessed, and the target language is English, but you can specify with the `from` and `to` keywords (at the end of the command.)  Multi-word texts should be in quotation marks.")
 
     def get_from_to(self, words):
         try:
