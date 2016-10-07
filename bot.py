@@ -29,6 +29,7 @@ class Bot:
         "Maybe later, okay?", "Leave me alone.", "What do you want?",
     )
     NUEL_TESTS = (
+        "https://chat.stackoverflow.com/transcript/message/33352696",
         "https://chat.stackoverflow.com/transcript/message/33126572",
         "https://chat.stackoverflow.com/transcript/message/33101025",
         "https://chat.stackoverflow.com/transcript/message/32915719",
