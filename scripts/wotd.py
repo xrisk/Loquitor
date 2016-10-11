@@ -2,6 +2,7 @@ from datetime import datetime
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
+import feedparser
 
 
 class WOTD:
@@ -28,8 +29,8 @@ class WOTD:
         event.message.reply(self.format())
 
     def get(self):
-        page = urlopen("https://en.wiktionary.org/wiki/Wiktionary:Word_of_the_day")
-        soup = BeautifulSoup(page)
+        feed = feedparser.parse("https://en.wiktionary.org/w/api.php?action=featuredfeed&feed=wotd")
+        soup = BeautifulSoup(feed.entries[-1]['summary'])
 
         span = soup.find('span', {'id': 'WOTD-rss-title'})
         word = span.text

@@ -110,7 +110,7 @@ def on_whatis(event, room, client, bot):
     if definition_tag is None:
         event.command = 'define'
         event.data['command'] = 'define'
-        wiki_find(event, room, client, site=WIKI_DEFINE)
+        wiki_find(event, room, bot, client, site=WIKI_DEFINE)
     else:
         event.message.reply(definition_tag.text)
 

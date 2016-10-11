@@ -10,7 +10,8 @@ GREETINGS = (
 
 def greet(room, user_name):
     user_name = "".join(user_name.split())
-    greeting = choice(GREETINGS)
+    additional = "I am a bot. For a list of my commands, type `>>help`."
+    greeting = " ".join([choice(GREETINGS), additional])
     room.send_message(greeting.format("@" + user_name))
 
 def user_entered(event, room, client):
