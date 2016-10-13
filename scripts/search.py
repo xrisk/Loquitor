@@ -8,7 +8,7 @@ import re
 
 from bs4 import BeautifulSoup
 import requests
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode, urlparse
 from urllib.request import urlopen
 
 
@@ -19,7 +19,7 @@ OPERATORS = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 WIKI_DEFINE = 'en.wiktionary.org'
 WIKI_ENCYCL = 'en.wikipedia.org'
 
-def search_bing(q, results=5, **kwargs):
+def search_bing(q, results=-1, **kwargs):
     kwargs['q'] = q
     url = "https://bing.com/search?" + urlencode(kwargs)
     page = urlopen(url)
@@ -27,7 +27,9 @@ def search_bing(q, results=5, **kwargs):
 
     # A tag that shows up before the search results
     tag = soup.find('title')
-    for i in range(results):
+    i = 0
+    # If results is negative or a float, this will find all results
+    while i != results:
         tag = tag.find_next('li', {'class': 'b_algo'})
         if tag is None:
             if i == 0:
@@ -41,6 +43,7 @@ def search_bing(q, results=5, **kwargs):
         url = title_tag['href']
         info = tag.find('p').text
         yield title, url, info
+        i += 1
 
 def eval_expr(expr):
     """
@@ -64,7 +67,7 @@ def eval_(node):
         raise TypeError(node)
 
 def on_search(event, room, client, bot):
-    search = search_bing(event.query)
+    search = search_bing(event.query, 5)
     messages = []
 
     format = "> {title}, ({url})\n\n{desc}"
@@ -74,16 +77,30 @@ def on_search(event, room, client, bot):
 
     event.message.reply("\n\n\n".join(messages), False)
 
+def is_xkcd_link(link):
+    parsed = urlparse(link)
+    if parsed.netloc:
+        parts = parsed.netloc.split('.')
+    else:
+        parts = parsed.path.split('.')
+
+    return (parts[0] == 'xkcd') or ((parts[0] == 'www') and (parts[1] == 'xkcd'))
+
+
 def on_xkcd(event, room, client, bot):
     query = event.query
     if query.isdigit():
         event.message.reply("https://xkcd.com/" + query)
     else:
-        search = search_bing('site:xkcd.com ' + query, 1)
+        search = search_bing('site:xkcd.com ' + query)
         try:
-            event.message.reply(next(search)[1])
+            result = next(search)
+            while not is_xkcd_link(result[1]):
+                result = next(search)
+
+            event.message.reply(result[1])
         except StopIteration:
-            event.message.reply("Woops.  It looks like I couldn't that.")
+            event.message.reply("Sorry, I couldn't find anything.")
 
 def wiki_find(event, room, client, bot, site=WIKI_ENCYCL):
     url = "https://{}/w/index.php?search={}".format(site, quote_plus(event.query))
