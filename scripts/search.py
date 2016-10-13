@@ -8,8 +8,7 @@ import re
 
 from bs4 import BeautifulSoup
 import requests
-from pws import Bing
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlencode
 from urllib.request import urlopen
 
 
@@ -19,6 +18,29 @@ OPERATORS = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 
 WIKI_DEFINE = 'en.wiktionary.org'
 WIKI_ENCYCL = 'en.wikipedia.org'
+
+def search_bing(q, results=5, **kwargs):
+    kwargs['q'] = q
+    url = "https://bing.com/search?" + urlencode(kwargs)
+    page = urlopen(url)
+    soup = BeautifulSoup(page)
+
+    # A tag that shows up before the search results
+    tag = soup.find('title')
+    for i in range(results):
+        tag = tag.find_next('li', {'class': 'b_algo'})
+        if tag is None:
+            if i == 0:
+                raise StopIteration
+            else:
+                yield from search_bing(q, results - i, first=i)
+                break
+
+        title_tag = tag.find('h2').find('a')
+        title = title_tag.text
+        url = title_tag['href']
+        info = tag.find('p').text
+        yield title, url, info
 
 def eval_expr(expr):
     """
@@ -42,13 +64,13 @@ def eval_(node):
         raise TypeError(node)
 
 def on_search(event, room, client, bot):
-    search = Bing.search(event.query)
+    search = search_bing(event.query)
     messages = []
 
-    format = "> {result[link_text]}, ({result[link]})\n\n{result[link_info]}"
+    format = "> {title}, ({url})\n\n{desc}"
 
-    for result in search['results']:
-        messages.append(format.format(result=result))
+    for title, url, desc in search:
+        messages.append(format.format(title=title, url=url, desc=desc))
 
     event.message.reply("\n\n\n".join(messages), False)
 
@@ -57,10 +79,10 @@ def on_xkcd(event, room, client, bot):
     if query.isdigit():
         event.message.reply("https://xkcd.com/" + query)
     else:
-        search = Bing.search('site:xkcd.com ' + query, 1)
+        search = search_bing('site:xkcd.com ' + query, 1)
         try:
-            event.message.reply(search['results'][0]['link'])
-        except IndexError:
+            event.message.reply(next(search)[1])
+        except StopIteration:
             event.message.reply("Woops.  It looks like I couldn't that.")
 
 def wiki_find(event, room, client, bot, site=WIKI_ENCYCL):
