@@ -52,6 +52,17 @@ def on_search(event, room, client, bot):
 
     event.message.reply("\n\n\n".join(messages), False)
 
+def on_xkcd(event, room, client, bot):
+    query = event.query
+    if query.isdigit():
+        event.message.reply("https://xkcd.com/" + query)
+    else:
+        search = Bing.search('site:xkcd.com ' + query, 1)
+        try:
+            event.message.reply(search['results'][0]['link'])
+        except IndexError:
+            event.message.reply("Woops.  It looks like I couldn't that.")
+
 def wiki_find(event, room, client, bot, site=WIKI_ENCYCL):
     url = "https://{}/w/index.php?search={}".format(site, quote_plus(event.query))
     r = requests.get(url)
@@ -132,7 +143,7 @@ def on_youtube(event, room, client, bot):
 
 commands = {'search': on_search, 'wiki': wiki_find, 'youtube': on_youtube,
             'define': lambda e,r,c,b: wiki_find(e,r,c,b,WIKI_DEFINE),
-            'yt': on_youtube, 'whatis': on_whatis,
+            'yt': on_youtube, 'whatis': on_whatis, 'xkcd': on_xkcd,
 }
 
 help = {
@@ -142,4 +153,5 @@ help = {
     'youtube': 'Search for item on YouTube',
     'yt': 'Synonym for `youtube`',
     'whatis': 'Find definition off of Google.  If nothing is found, use >>define',
+    'xkcd': 'Search xkcd.com for a comic.  Can be given an id or a search term.',
 }
