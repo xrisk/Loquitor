@@ -9,16 +9,19 @@ A command is given to the bot by prepending a chat message with `>>`.  Those com
 * `greet USER1 [USER2] [USER3] ...`: For each user given, greet that user (no @ is needed when giving the names.)
 * `help [CMD]`: Gives help on all commands that implement help (probably everything).  If the name of a command is passed to `help` (without `>>`), it gives help on only that command.
 * `pause TIME`: Pause for the specified amount of time.  When the bot is paused, it may respond to messages already posted, but it will not listen for more messages until the time runs out.  Only room owners can run this command.
-* `search QUERY`: Gives a list of ten search results from bing.com.  Because of the limitations of chat formatting, the results are given like this:
+* `search QUERY`: Gives a list of ten search results from Bing.  Because of the limitations of chat formatting, the results are given like this:
 
 >   \> Speedtest.net - Official Site, (https://speedtest.net)
 >
    Test your Internet connection bandwidth to locations around the world with this interactive broadband speed test from Ookla 
 
 * `test`: Responds with a random message taken from a list found [here](https://github.com/ralphembree/Loquitor/blob/master/bot.py#L24).
+* `translate`: Translates a word or phrase. If multiple words are given, they should be surrounded with quotation marks.  The source language will be automatically detected, but it can be specified with `from LANG`.  The translated text will be in English unless `to LANG` is specified.
 * `whatis`: Tries to find a definition of a word or phrase by searching Google for the phrase with `definition` prepended.  If Google's little custom response is not there, it resorts to the `define` command.
-* `wiki`: Searches wikipedia.org for a word or phrase.
-* `youtube QUERY`: Searches youtube.com for a video.  It responds with the first result one-boxed. The `yt` shortcut command can also be used.
+* `wiki`: Searches Wikipedia for a word or phrase.
+* `wotd`: Finds the word of the day from Wiktionary.
+* `xkcd`: Finds an xkcd comic given an ID or a search term.  Without arguments, gives a random comic.
+* `youtube QUERY`: Searches YouTube for a video.  It responds with the first result one-boxed. The `yt` shortcut command can also be used.
 
 ## Contributing
 
