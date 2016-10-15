@@ -1,30 +1,29 @@
 from collections import defaultdict
+import re
 from threading import Thread
 
 import chatexchange6 as chatexchange
 from chatexchange6 import events
 
+def get_subs(cls):
+    subs = cls.__subclasses__()
+    if subs:
+        for sub in subs:
+            yield from get_subs(sub)
+    else:
+        yield cls
+
+
+def convert_cls_name(cls):
+    return '_'.join([
+        a.lower()
+        for a in re.split('([A-Z][a-z]*)', cls.__name__)
+            if a
+    ])
+
 class Events:
     events = {
-        'invitation': events.Invitation.type_id,
-        'message_deleted': events.MessageDeleted.type_id,
-        'message_edited': events.MessageEdited.type_id,
-        'message_moved_out': events.MessageMovedOut.type_id,
-        'message_posted': events.MessagePosted.type_id,
-        'message_reply': events.MessageReply.type_id,
-        'message_starred': events.MessageStarred.type_id,
-        'message_moved_in': events.MessagedMovedIn.type_id,
-        'user_mentioned': events.UserMentioned.type_id,
-        'message_flagged': events.MessageFlagged.type_id,
-        'moderator_flag': events.ModeratorFlag.type_id,
-        'room_name_changed': events.RoomNameChanged.type_id,
-        'time_break': events.TimeBreak.type_id,
-        'user_entered': events.UserEntered.type_id,
-        'user_left': events.UserLeft.type_id,
-        'user_merged': events.UserMerged.type_id,
-        'user_notification': events.UserNotification.type_id,
-        'user_settings_changed': events.UserSettingsChanged.type_id,
-        'user_suspended': events.UserSuspended.type_id,
+        convert_cls_name(cls): cls.type_id for cls in get_subs(events.Event)
     }
 
     rooms = []
