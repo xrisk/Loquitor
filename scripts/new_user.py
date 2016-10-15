@@ -1,4 +1,6 @@
 from random import choice
+from re import findall
+from string import punctuation
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -8,8 +10,10 @@ GREETINGS = (
     "Howdy, {}.",
 )
 
+INVALID_USER = [char for char in punctuation if char not in "'-"]
+
 def greet(room, user_name):
-    user_name = "".join(user_name.split())
+    user_name = "".join([char for char in user_name if char not in INVALID_USER])
     additional = "I am a bot. For a list of my commands, type `>>help`."
     greeting = " ".join([choice(GREETINGS), additional])
     room.send_message(greeting.format("@" + user_name))
