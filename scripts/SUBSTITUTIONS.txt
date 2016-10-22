@@ -191,6 +191,7 @@ excited
 yay;
 &yay
 yay
+yay!
 &happy;
 happy;
 &happy
@@ -226,6 +227,36 @@ fish
 flip;
 &flip
 flip
+
+##define &friends;
+( 。・_・。)人(。・_・。 )
+( ⌒o⌒)人(⌒-⌒ )v
+(･_･”)/＼(･_･”)
+（*＾ω＾）人（＾ω＾*）
+(°◇°人°◇°)
+(=´∀`)人(´∀‘=)
+ヘ( ^o^)ノ＼(^_^ )
+（　＾＾）人（＾＾　）
+(((*°▽°*)八(*°▽°*)))♪
+（＾▽＾）／＼（＾▽＾）
+(*^o^)人(^o^*)
+♪ヽ( ⌒o⌒)人(⌒-⌒ )v ♪
+ヾ(*⌒∇⌒)八(⌒∇⌒*)ツ
+♪～(◔◡◔ิ)人(╹◡╹๑)～♪
+(ノ＾ω＾)ハ(＾ω＾ )ノ
+(ﾉ￣∇￣)乂(￣ｰ￣ )ﾉ
+(Ɔ˘⌣˘)(˘⌣˘)˘⌣˘ C)
+(/^-^(^ ^*)/
+٩( ´◡` )( ´◡` )۶
+
+##alias
+&friends
+friends;
+friends
+&friend;
+&friend
+friend;
+friend
 
 ##define &grr;
 ##alias
@@ -309,6 +340,7 @@ punch
 ¯\\_(ツ)_/¯
 
 ##alias
+&shrug
 shrug;
 shrug
 
@@ -348,3 +380,5 @@ what?
 what
 wut
 wut?
+wat
+wat?

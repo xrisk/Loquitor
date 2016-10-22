@@ -26,6 +26,7 @@ class main:
                     warn("Could not create substitutions file.")
 
         room.connect("message-posted", self.on_message_posted)
+        bot.register("kaomoji", self.kaomoji_command, help="Display list of kaomojis supported.  With `kaomoji all`, even aliases will be displayed.")
 
 
     def add(self, path):
@@ -72,13 +73,35 @@ class main:
 
         return random.choice(choices)
 
+    def kaomoji_command(self, event, room, client, bot):
+        fmt = '{kaomoji}\n\nKamojis are triggered with an ampersand and a semicolon, but those punctuation characters are not generally needed.  Other than a semicolon, no punctuation can come after a kaomoji unless it is specifically set for that kaomoji.  For example, "huh?" and "what?" are valid, but "angry." is not.'
+
+        args = event.args
+        nargs = len(args)
+        if nargs == 0:
+            keys = self.subs.keys()
+        elif (nargs == 1) and (args[0] == 'all'):
+            keys = set(self.subs.keys()) | set(self.aliases.keys())
+        else:
+            event.content = " ".join(args)
+            self.on_message_posted(event, room, client)
+            return
+
+        event.message.reply(fmt.format(kaomoji=" ".join(sorted(keys))), False)
+
     def on_message_posted(self, event, room, client):
         bot = sys.modules[self.bot.__module__]
         message = bot.remove_ctrl_chars(html.unescape(event.content))
 
         first_word = message.partition(' ')[0]
         used = set()
-        for key in (message, first_word, message.lower(), first_word.lower()):
+        lower_message = message.lower()
+        words = message.split()
+        lower_words = lower_message.split()
+        word_keys = [" ".join(words[:i+1]) for i in range(len(words))]
+        lower_word_keys = [" ".join(lower_words[:i+1]) for i in range(len(words))]
+        keys = [message] + word_keys + [message.lower()] + lower_word_keys
+        for key in keys:
             if key in used:
                 continue
             try:
