@@ -18,6 +18,7 @@ OPERATORS = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
 
 WIKI_DEFINE = 'en.wiktionary.org'
 WIKI_ENCYCL = 'en.wikipedia.org'
+METAS = ['meta.stackoverflow.com', 'meta.stackexchange.com']
 
 def search_bing(q, results=-1, **kwargs):
     kwargs['q'] = q
@@ -68,6 +69,19 @@ def eval_(node):
 
 def on_search(event, room, client, bot):
     search = search_bing(event.query, 5)
+    messages = []
+
+    format = "> {title}, ({url})\n\n{desc}"
+
+    for title, url, desc in search:
+        messages.append(format.format(title=title, url=url, desc=desc))
+
+    event.message.reply("\n\n\n".join(messages), False)
+
+def on_meta(event, room, client, bot):
+    meta_string = " or ".join(METAS)
+    string = "{} site:({})".format(event.query, meta_string)
+    search = search_bing(string, 5)
     messages = []
 
     format = "> {title}, ({url})\n\n{desc}"
@@ -186,6 +200,7 @@ def on_youtube(event, room, client, bot):
 commands = {'search': on_search, 'wiki': wiki_find, 'youtube': on_youtube,
             'define': lambda e,r,c,b: wiki_find(e,r,c,b,WIKI_DEFINE),
             'yt': on_youtube, 'whatis': on_whatis, 'xkcd': on_xkcd,
+            'meta': on_meta,
 }
 
 help = {
@@ -196,4 +211,5 @@ help = {
     'yt': 'Synonym for `youtube`',
     'whatis': 'Find definition off of Google.  If nothing is found, use >>define',
     'xkcd': 'Search xkcd.com for a comic.  Can be given an id or a search term.',
+    'meta': 'Search Meta Stack Overflow and Meta Stack Exchange for a query.',
 }
