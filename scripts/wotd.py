@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
@@ -11,7 +11,7 @@ class WOTD:
         self.definitions = []
 
     def __iter__(self):
-        today = date.today()
+        today = datetime.utcnow().date()
         if self.wotd is None or self.wotd[-1] != today:
             generator = self.get()
             info = next(generator)
