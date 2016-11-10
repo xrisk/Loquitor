@@ -36,9 +36,13 @@ class WOTD:
         word = span.text
         speech_part = soup.find('i').text
         link = 'https://en.wiktionary.org' + span.parent['href']
-        fun_fact_tag = soup.find_all('small')[-1]
-        fun_fact = fun_fact_tag.text
-        fun_fact_tag.clear()
+        pointer = soup.find('img', alt='PointingHand.svg')
+        if pointer is None:
+            fun_fact = None
+        else:
+            fun_fact_tag = pointer.findNext()
+            fun_fact = fun_fact_tag.text
+            fun_fact_tag.clear()
 
         yield word, speech_part, link, fun_fact
 
@@ -52,7 +56,9 @@ class WOTD:
         for index, definition in enumerate(wotd_generator, 1):
             lines.append("{}. {}".format(index, definition.replace("\n", "\n\n")))
 
-        lines.append(fun_fact)
+        if fun_fact:
+            lines.append(fun_fact)
+
         return "\n\n".join(lines)
 
 

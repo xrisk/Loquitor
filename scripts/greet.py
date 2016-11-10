@@ -21,7 +21,10 @@ def greet(room, user_name):
 
 def on_greet(event, room, client, bot):
     for user_name in event.args:
-        user_name = user_name.strip(",")
+        if user_name == 'me':
+            user_name = event.user_name
+        else:
+            user_name = user_name.strip(",")
         greet(room, user_name)
 
 commands = {"greet": on_greet}
