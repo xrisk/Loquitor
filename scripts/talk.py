@@ -12,6 +12,10 @@ GREETINGS = (
 
 INVALID_USER = [char for char in punctuation if char not in "'-"]
 
+def on_say(event, room, client, bot):
+    query = event.query
+
+
 def greet(room, user_name):
     user_name = "".join([char for char in user_name if char not in INVALID_USER])
     additional = "I am a bot. For a list of my commands, type `>>help`."

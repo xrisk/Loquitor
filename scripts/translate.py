@@ -1,17 +1,15 @@
 from getpass import getpass
 import locale
-from re import match
 
 from BingTranslator import Translator
 
+from . import _parser
 
-class UnknownTokenError(Exception):
-    pass
-
-class UnknownLanguageError(Exception):
+class UnknownLanguageError(_parser.ParsingError):
     def __init__(self, language):
-        Exception.__init__(self, language)
+        _parser.ParsingError.__init__(self, language)
         self.language = language
+
 
 class main:
     def __init__(self, room, bot, client):
@@ -24,64 +22,41 @@ class main:
             return
 
         self.translator = Translator(client_id, secret)
-        bot.register("translate", self.on_translate, help="Translate word/phrase using Bing's translation API.  By default, the source language is guessed, and the target language is English, but you can specify with the `from` and `to` keywords (at the end of the command.)  Multi-word texts should be in quotation marks.")
+        self.parser = _parser.Parser(['from', 'to'], self.parse_token)
+        bot.register("translate", self.on_translate, help="Translate word/phrase using Bing's translation API.  By default, the source language is guessed, and the target language is English, but you can specify with the `from` and `to` keywords (at the end of the command).  Multi-word texts should be in quotation marks.")
 
-    def get_from_to(self, words):
-        try:
-            token, lang = words[-2:]
-            if (len(token.split()) > 1) or (len(lang.split()) > 1):
-                raise UnknownTokenError
-            if token in ("from", "to"):
-                lang = self.normalize(lang)
-                if not lang:
-                    raise UnknownLanguageError(lang)
-                return words[:-2], (token, lang)
-            else:
-                raise UnknownTokenError
-        except ValueError as e:
-            pass
-        return words, None
-
-    def respond_from_to(self, event, words):
-        reply = event.message.reply
-        try:
-            words, result = self.get_from_to(words)
-            return words, result
-        except UnknownTokenError:
-            reply("Only `from` and `to` are allowed keywords.")
-        except UnknownLanguageError as e:
-            reply("Sorry, I don't understand {!r} is.".format(e.language))
-        raise ValueError
-
+    def parse_token(self, token, args):
+        num_args = len(args)
+        if num_args == 0:
+            raise UnknownLanguageError("")
+        elif num_args == 1:
+            try:
+                return self.normalize(args[0])
+            except ValueError:
+                raise UnknownLanguageError("")
+        else:
+            try:
+                return self.normalize(" ".join(args))
+            except ValueError:
+                return False
 
     def on_translate(self, event, room, client, bot):
         words = event.args
         keys = {'from': 'from_lang', 'to': 'to_lang'}
         dic = {keys['to']: 'en'}
         try:
-            words, result = self.respond_from_to(event, words)
-        except ValueError:
-            return
-        if result:
-            key, value = result
-            dic[keys[key]] = value
-            try:
-                words, result = self.respond_from_to(event, words)
-            except ValueError:
-                return
-            if result:
-                key2, value2 = result
-                if key2 == key:
-                    message = "Text can be translated {} only one language"
-                    event.message.reply(message.format(key))
-                    return
-                dic[keys[key2]] = value2
+            parsed = self.parser.parse(words)
+            leftover = parsed.pop('leftover')
+            if len(leftover) > 1:
+                event.message.reply("Either you didn't put your text in quotation marks, or you're trying to use commands that I don't understand.")
+            else:
+                text = " ".join(leftover)
+                for key, value in parsed.items():
+                    dic[keys[key]] = value
+                event.message.reply(self.translator.translate(text, **dic), False)
+        except UnknownLanguageError as e:
+            event.message.reply("I don't understand what {!r} is.".format(e.language))
 
-        if len(words) > 1:
-            event.message.reply("The text to be translated should be surrounded with quotation marks.")
-            return
-
-        event.message.reply(self.translator.translate("".join(words), **dic))
 
     def normalize(self, lang):
         # Normalized good locale codes will strip the spaces, but bad ones
@@ -91,4 +66,4 @@ class main:
             lang = lang.strip()
             raise ValueError("Unknown locale code: {}".format(lang), lang)
         return normalized[:2]
-        
+
