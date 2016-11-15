@@ -11,4 +11,5 @@ setup(name='Loquitor',
       install_requires=['chatexchange', 'bs4', 'requests', 'BingTranslator', 'feedparser'],
       scripts=['loquitor'],
       package_data={'scripts': ['scripts/SUBSTITUTIONS.txt']},
+      use_2to3=True,
 )
