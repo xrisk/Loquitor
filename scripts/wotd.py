@@ -1,4 +1,6 @@
 from datetime import datetime
+import pickle
+import os.path
 from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
@@ -6,12 +8,29 @@ import feedparser
 
 
 class WOTD:
+    FILE = os.path.join(os.path.dirname(__file__), '.wotd')
     def __init__(self):
         self.wotd = None
         self.definitions = []
 
+    def get_wotd_from_file(self):
+        try:
+            with open(self.FILE, 'rb') as f:
+                self.wotd = pickle.load(f)
+                self.definitions = pickle.load(f)
+        except (IOError, pickle.PickleError, EOFError):
+            pass
+
+    def set_wotd_to_file(self):
+        # Any errors are passed to the calling function
+        with open(self.FILE, 'wb') as f:
+            pickle.dump(self.wotd, f)
+            pickle.dump(self.definitions, f)
+
     def __iter__(self):
         today = datetime.utcnow().date()
+        if self.wotd is None or self.wotd[-1] != today:
+            self.get_wotd_from_file()
         if self.wotd is None or self.wotd[-1] != today:
             generator = self.get()
             info = next(generator)
@@ -21,6 +40,7 @@ class WOTD:
             for definition in generator:
                 self.definitions.append(definition)
                 yield definition
+            self.set_wotd_to_file()
         else:
             yield self.wotd[:-1]
             yield from self.definitions
@@ -57,7 +77,7 @@ class WOTD:
             lines.append("{}. {}".format(index, definition.replace("\n", "\n\n")))
 
         if fun_fact:
-            lines.append(fun_fact)
+            lines.append("--> " + fun_fact)
 
         return "\n\n".join(lines)
 
