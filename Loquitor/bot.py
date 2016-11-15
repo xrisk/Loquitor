@@ -10,7 +10,7 @@ import sys
 from traceback import print_exc
 import unicodedata
 
-import chatexchange
+import chatexchange6 as chatexchange
 
 from . import skeleton
 
