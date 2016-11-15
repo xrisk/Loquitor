@@ -1,6 +1,10 @@
 # Loquitor
 A chatbot for Stack Exchange
 
+To install with pip, run:
+
+`sudo pip3 install -e git+https://github.com/ralphembree/Loquitor.git#egg=Loquitor`
+
 ## Commands
 
 A command is given to the bot by prepending a chat message with `>>`.  Those commands are as follows:
