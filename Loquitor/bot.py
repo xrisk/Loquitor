@@ -12,7 +12,7 @@ import unicodedata
 
 import chatexchange
 
-import skeleton
+from . import skeleton
 
 class Bot:
     UNKNOWN_MESSAGES = (

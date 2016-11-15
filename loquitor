@@ -1,0 +1,39 @@
+#!/usr/bin/python
+
+from getpass import getpass
+import sys
+
+from Loquitor import bot
+
+def get_site(default):
+    usable = ('stackoverflow.com', 'stackexchange.com', 'meta.stackexchange.com')
+    site = input("Site (hit Enter to choose stackoverflow.com): ").strip()
+    while site not in usable:
+        if site:
+            site = input("Please choose one of {}: ".format(', '.join(usable))).strip()
+        else:
+            return default
+    return site
+
+
+def main(username=None, password=None, site=None, room=None):
+    if username is None:
+        username = input("E-mail: ")
+    if password is None:
+        password = getpass("Password: ")
+    if site is None:
+        site = get_site("stackoverflow.com")
+    if room is None:
+        room = input("What room would you like to join? ")
+        while True:
+            try:
+                room = int(room)
+                break
+            except ValueError:
+                room = input("Please type an integer: ")
+
+    print("Loading...", end="\r")
+    bot.main(room, username, password, site)
+
+if __name__ == "__main__":
+    main()
