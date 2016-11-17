@@ -51,12 +51,13 @@ class Bot:
         "https://chat.stackoverflow.com/transcript/message/33205451",
 
     )
-    def __init__(self, room, client):
+    def __init__(self, room, client, config_dir):
         if not client.logged_in:
             raise ValueError("Client must be logged in.")
 
         self.room = room
         self.client = client
+        self.config_dir = config_dir
 
         self.commands = {}
         self.responses = {}
@@ -187,12 +188,12 @@ class Command(metaclass=EventMeta):
 skeleton.Events.register('command', Command)
 
 
-def main(room, username, password, host='stackoverflow.com'):
+def main(room, username, password, config_dir, host='stackoverflow.com'):
     from . import scripts
 
     client = chatexchange.Client(host, username, password)
     room = skeleton.Room(room, client)
-    bot = Bot(room, client)
+    bot = Bot(room, client, config_dir)
 
     for module_name in scripts.__all__:
         module = sys.modules['Loquitor.scripts.{}'.format(module_name)]
@@ -222,17 +223,3 @@ def get_query_args(string):
     query = remove_ctrl_chars(string).strip()
     args = next(csv.reader([query], delimiter=" "))
     return query, args
-
-if __name__ == '__main__':
-    username = input("E-mail: ")
-    password = getpass("Password: ")
-    room = input("What room would you like to join? ")
-    while True:
-        try:
-            room = int(room)
-            break
-        except ValueError:
-            room = input("Please type an integer: ")
-
-    print("Loading...", end='\r')
-    main(room, username, password)

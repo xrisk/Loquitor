@@ -12,10 +12,5 @@ for filename in os.listdir(scriptdir):
 
     __all__.append(filename[:-3])
 
-try:
-    os.makedirs(os.path.join(os.path.expanduser("~"), ".loquitor"))
-except OSError:
-    warn("Could not create configuration folder.")
-
 del imp, os, sys, scriptdir, filename
 from . import *

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from getpass import getpass
+import os
 import sys
 
 from Loquitor import bot
@@ -16,7 +17,7 @@ def get_site(default):
     return site
 
 
-def main(username=None, password=None, site=None, room=None):
+def main(username=None, password=None, site=None, room=None, config_dir=None):
     if username is None:
         username = input("E-mail: ")
     if password is None:
@@ -31,9 +32,11 @@ def main(username=None, password=None, site=None, room=None):
                 break
             except ValueError:
                 room = input("Please type an integer: ")
+    if config_dir is None:
+        config_dir = os.path.expanduser("~/.loquitor")
 
     print("Loading...", end="\r")
-    bot.main(room, username, password, site)
+    bot.main(room, username, password, config_dir, site)
 
 if __name__ == "__main__":
     main()

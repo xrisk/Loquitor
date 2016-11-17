@@ -1,31 +1,37 @@
 from datetime import datetime
 import pickle
 import os.path
-from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
 import feedparser
 
 
 class WOTD:
-    FILE = os.path.join(os.path.expanduser("~"), ".loquitor", '.wotd')
     def __init__(self):
         self.wotd = None
         self.definitions = []
+        self.wotd_file = None
 
     def get_wotd_from_file(self):
+        if self.wotd_file is None:
+            return
         try:
-            with open(self.FILE, 'rb') as f:
+            with open(self.wotd_file, 'rb') as f:
                 self.wotd = pickle.load(f)
                 self.definitions = pickle.load(f)
         except (IOError, pickle.PickleError, EOFError):
             pass
 
     def set_wotd_to_file(self):
-        # Any errors are passed to the calling function
-        with open(self.FILE, 'wb') as f:
-            pickle.dump(self.wotd, f)
-            pickle.dump(self.definitions, f)
+        if self.wotd_file is None:
+            return
+        try:
+            os.makedirs(os.path.dirname(self.wotd_file), exists_ok=True)
+            with open(self.wotd_file, 'wb') as f:
+                pickle.dump(self.wotd, f)
+                pickle.dump(self.definitions, f)
+        except OSError:
+            pass
 
     def __iter__(self):
         today = datetime.utcnow().date()
@@ -46,6 +52,7 @@ class WOTD:
             yield from self.definitions
 
     def on_wotd(self, event, room, client, bot):
+        self.wotd_file = os.path.join(bot.config_dir, '.wotd')
         event.message.reply(self.format(), False)
 
     def get(self):

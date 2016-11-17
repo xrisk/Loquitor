@@ -21,7 +21,7 @@ class main:
                 warn("Could not open substitutions file.")
                 try:
                     with open(path, 'w'):
-                        warn("New file successfully created.")
+                        pass
                 except IOError:
                     warn("Could not create substitutions file.")
 
