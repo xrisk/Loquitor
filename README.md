@@ -3,7 +3,7 @@ A chatbot for Stack Exchange
 
 To install with pip, run:
 
-`sudo pip3 install git+https://github.com/ralphembree/Loquitor.git#egg=Loquitor`
+`[sudo] pip3 install git+https://github.com/ralphembree/Loquitor.git --process-dependency-links`
 
 ## Commands
 
