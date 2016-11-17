@@ -10,6 +10,6 @@ setup(name='Loquitor',
       packages=['Loquitor', 'Loquitor.scripts'],
       install_requires=['BingTranslator', 'feedparser', 'ChatExchange6'],
       dependency_links=['http://github.com/ByteCommander/ChatExchange6/tarball/master#egg=ChatExchange6-1.0'],
-      scripts=['loquitor'],
+      scripts=['bin/loquitor'],
       package_data={'scripts': ['scripts/SUBSTITUTIONS.txt']},
 )
