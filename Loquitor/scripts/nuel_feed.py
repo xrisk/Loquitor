@@ -4,7 +4,7 @@ from threading import Timer
 
 import feedparser
 
-PATH = os.path.dirname(__file__)
+PATH = os.path.join(os.path.expanduser("~"), ".loquitor")
 
 def get_since(url, last_id=None):
     parser = feedparser.parse(url)

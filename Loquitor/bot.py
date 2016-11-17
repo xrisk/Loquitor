@@ -188,14 +188,14 @@ skeleton.Events.register('command', Command)
 
 
 def main(room, username, password, host='stackoverflow.com'):
-    import scripts
+    from . import scripts
 
     client = chatexchange.Client(host, username, password)
     room = skeleton.Room(room, client)
     bot = Bot(room, client)
 
     for module_name in scripts.__all__:
-        module = sys.modules['scripts.{}'.format(module_name)]
+        module = sys.modules['Loquitor.scripts.{}'.format(module_name)]
         if hasattr(module, 'main') and callable(module.main):
             module.main(room, bot, client)
         elif hasattr(module, 'commands') and hasattr(module.commands, 'items'):

@@ -7,7 +7,7 @@ from warnings import warn
 
 
 class main:
-    PATH = os.path.join(os.path.dirname(__file__), 'SUBSTITUTIONS.txt')
+    PATH = os.path.join(os.path.expanduser("~"), ".loquitor", 'SUBSTITUTIONS.txt')
     VALUES = 0
     ALIAS = 1
     def __init__(self, room=None, bot=None, client=None, path=PATH):

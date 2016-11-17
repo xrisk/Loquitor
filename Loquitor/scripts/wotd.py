@@ -8,7 +8,7 @@ import feedparser
 
 
 class WOTD:
-    FILE = os.path.join(os.path.dirname(__file__), '.wotd')
+    FILE = os.path.join(os.path.expanduser("~"), ".loquitor", '.wotd')
     def __init__(self):
         self.wotd = None
         self.definitions = []
