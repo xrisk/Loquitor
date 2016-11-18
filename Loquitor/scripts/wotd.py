@@ -26,7 +26,7 @@ class WOTD:
         if self.wotd_file is None:
             return
         try:
-            os.makedirs(os.path.dirname(self.wotd_file), exists_ok=True)
+            os.makedirs(os.path.dirname(self.wotd_file), exist_ok=True)
             with open(self.wotd_file, 'wb') as f:
                 pickle.dump(self.wotd, f)
                 pickle.dump(self.definitions, f)
